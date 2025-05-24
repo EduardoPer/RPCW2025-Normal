@@ -1,0 +1,116 @@
+12#############
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeC WHERE {
+    ?m a :Mestre ;
+       :nome "Pierre Bourdieu" ;
+       :ensina ?disc .
+    ?disc :estudaConceito/:nome ?nomeC .
+}
+
+13#############
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?tituloO WHERE {
+    ?o a :Obra ;
+       :titulo ?tituloO ;
+       :explica/:nome "Relatividade" .
+}
+
+14###########
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeD WHERE {
+    ?d a :Disciplina ;
+       :nome ?nomeD ;
+       :pertenceA/:nome "Ciências Sociais" .
+}
+
+15##########
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeA WHERE {
+    ?c a :Conceito ;
+       :nome "Lógica Formal" ;
+       :temAplicaçãoEm/:nome ?nomeA .
+}
+
+16##########
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeD WHERE {
+    ?d a :Disciplina ;
+       :nome ?nomeD ;
+       :pertenceA/:nome "Ciências Exatas" .
+}
+
+17#########
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeM WHERE {
+    ?m a :Mestre ;
+       :nome ?nomeM ;
+       :foiMestreEm/:nome "Século XIX" .
+}
+
+18########
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeAp WHERE {
+    ?a a :Aprendiz ;
+       :titulo ?nomeAp ;
+       :aprende ?d .
+    ?d :estudaConceito/:nome "Programação" .
+}
+
+19#######
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeD (COUNT(?ap) as ?nAp) WHERE {
+    ?d a :Disciplina ;
+       :nome ?nomeD ;
+       :éAprendidaPor ?ap .
+}GROUP BY ?nomeD
+
+20######
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomePer (COUNT(?c) as ?nConceitos) WHERE {
+    ?p a :PeríodoHistorico ;
+       :nome ?nomePer .
+    ?c a :Conceito ;
+       :surgeEm ?p .
+}GROUP BY ?nomePer
+
+21#####
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeC (GROUP_CONCAT(?titObra; separator="; ") as ?groupObras) WHERE {
+    ?c a :Conceito ;
+       :nome ?nomeC ;
+       :éExplicadoPor/:titulo ?titObra .
+}GROUP BY ?nomeC
+
+22####
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?nomeD (GROUP_CONCAT(?nomeApr; separator="; ") as ?groupApr) WHERE {
+    ?d a :Disciplina ;
+       :nome ?nomeD ;
+       :éAprendidaPor/:titulo ?nomeApr .
+}GROUP BY ?nomeD
+
+23####
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX : <http://rpcw.di.uminho.pt/2025/sapientia#>
+SELECT ?escalao (COUNT(?aprendiz) AS ?numAprendizes)
+WHERE {
+    ?aprendiz a :Aprendiz ;
+              :idade ?idade .
+  BIND(xsd:integer(?idade) AS ?idadeInt)
+  
+  # Define o escalão
+  BIND(
+    IF(?idadeInt >= 17 && ?idadeInt <= 34, "[17-34]",
+    IF(?idadeInt >= 35 && ?idadeInt <= 44, "[35-44]",
+    IF(?idadeInt >= 45 && ?idadeInt <= 54, "[45-54]",
+    IF(?idadeInt >= 55 && ?idadeInt <= 64, "[55-64]",
+    IF(?idadeInt >= 65 && ?idadeInt <= 74, "[65-74]",
+    IF(?idadeInt >= 75 && ?idadeInt <= 100, "[75-100]", "Older")))))) AS ?escalao
+  )
+  
+  FILTER(BOUND(?escalao))
+}
+GROUP BY ?escalao
+ORDER BY ?escalao
+
+
